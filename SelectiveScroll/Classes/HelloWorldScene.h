@@ -2,10 +2,14 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
+#include "SelectiveScroll.h"
 
 class HelloWorld : public cocos2d::CCLayer
 {
 public:
+    CC_SYNTHESIZE(SelectiveScroll*, _scroll, Scroll);
+    CC_SYNTHESIZE(CCLayerColor*, _bgLayer, BGLayer);
+    
     // Method 'init' in cocos2d-x returns bool, instead of 'id' in cocos2d-iphone (an object pointer)
     virtual bool init();
 

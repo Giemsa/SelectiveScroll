@@ -280,6 +280,8 @@
 		0BF5398117B1C6D300032155 /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BF5398017B1C6D300032155 /* libwebsockets.a */; };
 		0BF5398717B1C6D300032155 /* AppDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0BF5398617B1C6D300032155 /* AppDelegate.cpp */; };
 		0BF5398A17B1C6D300032155 /* HelloWorldScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0BF5398917B1C6D300032155 /* HelloWorldScene.cpp */; };
+		0BF5399217B1D1B500032155 /* SelectiveScroll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */; };
+		0BF5399617B2714D00032155 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0BF5399517B2714D00032155 /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -873,6 +875,9 @@
 		0BF5398617B1C6D300032155 /* AppDelegate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AppDelegate.cpp; path = Classes/AppDelegate.cpp; sourceTree = "<group>"; };
 		0BF5398817B1C6D300032155 /* HelloWorldScene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HelloWorldScene.h; path = Classes/HelloWorldScene.h; sourceTree = "<group>"; };
 		0BF5398917B1C6D300032155 /* HelloWorldScene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = HelloWorldScene.cpp; path = Classes/HelloWorldScene.cpp; sourceTree = "<group>"; };
+		0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SelectiveScroll.cpp; path = Classes/SelectiveScroll.cpp; sourceTree = "<group>"; };
+		0BF5399117B1D1B400032155 /* SelectiveScroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SelectiveScroll.h; path = Classes/SelectiveScroll.h; sourceTree = "<group>"; };
+		0BF5399517B2714D00032155 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -900,6 +905,7 @@
 		0BF535D717B1C6CC00032155 = {
 			isa = PBXGroup;
 			children = (
+				0BF5399517B2714D00032155 /* Default-568h@2x.png */,
 				0BF535F317B1C6CC00032155 /* SelectiveScroll */,
 				0BF535E217B1C6CC00032155 /* Frameworks */,
 				0BF535E117B1C6CC00032155 /* Products */,
@@ -2097,6 +2103,8 @@
 				0BF5398617B1C6D300032155 /* AppDelegate.cpp */,
 				0BF5398817B1C6D300032155 /* HelloWorldScene.h */,
 				0BF5398917B1C6D300032155 /* HelloWorldScene.cpp */,
+				0BF5399117B1D1B400032155 /* SelectiveScroll.h */,
+				0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2164,6 +2172,7 @@
 				0BF5360A17B1C6CD00032155 /* iTunesArtwork in Resources */,
 				0BF536A917B1C6CE00032155 /* ChangeLog in Resources */,
 				0BF5381D17B1C6D100032155 /* project.pbxproj in Resources */,
+				0BF5399617B2714D00032155 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2423,6 +2432,7 @@
 				0BF5397917B1C6D300032155 /* cpVect.c in Sources */,
 				0BF5398717B1C6D300032155 /* AppDelegate.cpp in Sources */,
 				0BF5398A17B1C6D300032155 /* HelloWorldScene.cpp in Sources */,
+				0BF5399217B1D1B500032155 /* SelectiveScroll.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2495,6 +2505,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2522,6 +2534,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = SelectiveScroll/Prefix.pch;

@@ -1,6 +1,9 @@
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
 
+#define WINSIZE CCDirector::sharedDirector()->getWinSize()
+#define WINCENTER CCPointMake(WINSIZE.width*0.5, WINSIZE.height*0.5)
+
 using namespace cocos2d;
 using namespace CocosDenshion;
 
@@ -22,63 +25,25 @@ CCScene* HelloWorld::scene()
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
-    //////////////////////////////
-    // 1. super init first
-    if ( !CCLayer::init() )
-    {
+    if (!CCLayer::init()) {
         return false;
     }
-
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    CCMenuItemImage *pCloseItem = CCMenuItemImage::create(
-                                        "CloseNormal.png",
-                                        "CloseSelected.png",
-                                        this,
-                                        menu_selector(HelloWorld::menuCloseCallback) );
-    pCloseItem->setPosition( ccp(CCDirector::sharedDirector()->getWinSize().width - 20, 20) );
-
-    // create menu, it's an autorelease object
-    CCMenu* pMenu = CCMenu::create(pCloseItem, NULL);
-    pMenu->setPosition( CCPointZero );
-    this->addChild(pMenu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    CCLabelTTF* pLabel = CCLabelTTF::create("Hello World", "Thonburi", 34);
-
-    // ask director the window size
-    CCSize size = CCDirector::sharedDirector()->getWinSize();
-
-    // position the label on the center of the screen
-    pLabel->setPosition( ccp(size.width / 2, size.height - 20) );
-
-    // add the label as a child to this layer
-    this->addChild(pLabel, 1);
-
-    // add "HelloWorld" splash screen"
-    CCSprite* pSprite = CCSprite::create("HelloWorld.png");
-
-    // position the sprite on the center of the screen
-    pSprite->setPosition( ccp(size.width/2, size.height/2) );
-
-    // add the sprite as a child to this layer
-    this->addChild(pSprite, 0);
     
+    // setup BG
+    ccColor4B color = ccc4(255.0 * 0.9, 255.0 * 0.9, 255.0 * 0.9, 255.0 * 1.0);
+    _bgLayer = CCLayerColor::create(color, WINSIZE.width, WINSIZE.height);
+    _bgLayer->setPosition(CCPointZero);
+    this->addChild(_bgLayer);
+    
+    // setup scroll
+    for (int i = 0; i < BoundingEffect_Count; i++) {
+        CCSize size = CCSizeMake(WINSIZE.width / (BoundingEffect_Count + 2), WINSIZE.height * 0.9);
+        SelectiveScroll* scroll = SelectiveScroll::create();
+        scroll->setPosition(CCSizeMake(WINSIZE.width / (BoundingEffect_Count + 1) * (i + 1), WINCENTER.y));
+        scroll->setBoundingEffectKind((BoundingEffect)i);
+        scroll->setContentSize(size);
+        scroll->retain();
+        this->addChild(scroll);
+    }
     return true;
-}
-
-void HelloWorld::menuCloseCallback(CCObject* pSender)
-{
-    CCDirector::sharedDirector()->end();
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
-#endif
 }
