@@ -101,7 +101,7 @@ void SelectiveScroll::onEnterTransitionDidFinish()
 
 
 #pragma mark - UI
-#pragma mark 
+#pragma mark Scroll
 
 void SelectiveScroll::scrollToPoint(CCPoint p)
 {
@@ -110,6 +110,7 @@ void SelectiveScroll::scrollToPoint(CCPoint p)
 
 void SelectiveScroll::scrollToPointWithAnimation(CCPoint p)
 {
+    this->stopAction((CCAction*)_runningAction);
     CCMoveTo* moveTo = CCMoveTo::create(1.0, p);
     _scrollLayer->runAction(CCEaseInOut::create(moveTo, 2.0));
 }
@@ -171,9 +172,8 @@ bool SelectiveScroll::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     if (_clipScrollInteraction && !this->boundingBox().containsPoint(p)) {
         return false;
     }
-    
     // stop scrolling animation,
-    _scrollLayer->stopAllActions();
+    this->stopAction((CCAction*)_runningAction);
     
     // save points for calc.
     _lastTouchPoint = p;
@@ -225,18 +225,19 @@ void SelectiveScroll::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
         // (bounce top)
         if (offsetY<= topY) {
             CCMoveTo* moveTo = CCMoveTo::create(1.0, CCPointMake(0, topY));
-            _scrollLayer->runAction((CCAction*)easeAction(moveTo, _topBoundingEffect));
+            _runningAction = (CCAction*)easeAction(moveTo, _topBoundingEffect);
         }
         // (bounce bottom)
         else if (0 <= offsetY) {
             CCMoveTo* moveTo = CCMoveTo::create(1.0, CCPointMake(0, 0));
-            _scrollLayer->runAction((CCAction*)easeAction(moveTo, _bottomBoundingEffect));
+            _runningAction = (CCAction*)easeAction(moveTo, _bottomBoundingEffect);
         }
         // (momentum scrolling)
         else {
             CCMoveBy* moveBy = CCMoveBy::create(0.87, CCPointMake(0, delta.y));
-            _scrollLayer->runAction(CCEaseSineOut::create(moveBy));
+            _runningAction = CCEaseSineOut::create(moveBy);
         }
+        _scrollLayer->runAction((CCAction*)_runningAction);
         
         // has selected item.
         if (_selectedItem != NULL) {

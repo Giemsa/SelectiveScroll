@@ -49,9 +49,13 @@ private:
     CCPoint _lastTouchPoint;
     CCPoint _beganScrollPosition;
     
+    // running animation
+    void* _runningAction;
+    
     // touch helper
     void* _selectedItem;
     void detectSelectedItem(CCPoint p);
+    
     
     // SelectiveScroll (Delegate)
     virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);

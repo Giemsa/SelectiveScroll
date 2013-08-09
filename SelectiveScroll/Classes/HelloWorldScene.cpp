@@ -37,14 +37,15 @@ bool HelloWorld::init()
     this->addChild(_bgLayer);
     
     // setup scroll
-    int count = BoundingEffect_Count;
+    int count = 1;
     for (int i = 0; i < count; i++) {
-        CCSize size = CCSizeMake(WINSIZE.width / (count + 2), WINSIZE.height * 0.7);
+        CCSize size = CCSizeMake(WINSIZE.width * 0.7, WINSIZE.height * 0.7);
         SelectiveScroll* scroll = SelectiveScroll::create();
         scroll->setPosition(CCSizeMake(WINSIZE.width / (count + 1) * (i + 1), WINCENTER.y));
-        scroll->setBoundingEffectKind((BoundingEffect)i);
+        scroll->setBoundingEffectKind(BoundingEffectElastic);
         scroll->setContentSize(size);
         scroll->setDelegate(this);
+        scroll->clipToBounds(false);
         scroll->retain();
         
         float lastY = 0.0;
@@ -64,7 +65,7 @@ bool HelloWorld::init()
             
             lastY = p.y + margin;
         }
-        scroll->setScrollSize(CCSizeMake(size.width, lastY));
+        scroll->setScrollSize(CCSizeMake(size.width * 3.0, lastY));
         this->addChild(scroll);
     }
     return true;
