@@ -52,16 +52,15 @@ bool SelectiveScroll::init()
     // bgLayer
     CCSize size = this->getContentSize();
     _bgLayer = CCLayerColor::create(_bgColor, size.width, size.height);
-    _bgLayer->setAnchorPoint(CCPointZero);
-    _bgLayer->retain();
     this->addChild(_bgLayer, LayerOrder_BGLayer);
+    _bgLayer->setAnchorPoint(CCPointZero);  
+    _bgLayer->retain();
     
     // scrollLayer
     _scrollLayer = CCLayerColor::create(_scrollLayerColor, _scrollSize.width, _scrollSize.height);
-    _scrollLayer->retain();
-    _scrollLayer->setAnchorPoint(CCPointMake(0.0, 0.0));
-    _scrollLayer->setPosition(CCPointZero);
     this->addChild(_scrollLayer, LayerOrder_ScrollLayer);
+    _scrollLayer->setAnchorPoint(CCPointMake(0.0, 0.0));
+    _scrollLayer->retain();
     
     return true;
 }
@@ -95,8 +94,27 @@ void SelectiveScroll::visit()
     }
 }
 
+void SelectiveScroll::onEnterTransitionDidFinish()
+{
+    _scrollLayer->setPosition(CCPointMake(0.0, this->getContentSize().height - _scrollSize.height));
+}
+
 
 #pragma mark - UI
+#pragma mark 
+
+void SelectiveScroll::scrollToPoint(CCPoint p)
+{
+    _scrollLayer->setPosition(p);
+}
+
+void SelectiveScroll::scrollToPointWithAnimation(CCPoint p)
+{
+    CCMoveTo* moveTo = CCMoveTo::create(1.0, p);
+    _scrollLayer->runAction(CCEaseInOut::create(moveTo, 2.0));
+}
+
+
 #pragma mark Touch
 
 // helper

@@ -45,9 +45,7 @@ bool HelloWorld::init()
         scroll->setBoundingEffectKind((BoundingEffect)i);
         scroll->setContentSize(size);
         scroll->setDelegate(this);
-//        scroll->enableToScroll(i % 2);
         scroll->retain();
-        this->addChild(scroll);
         
         float lastY = 0.0;
         int rowCount = 50;
@@ -67,6 +65,7 @@ bool HelloWorld::init()
             lastY = p.y + margin;
         }
         scroll->setScrollSize(CCSizeMake(size.width, lastY));
+        this->addChild(scroll);
     }
     return true;
 }
@@ -88,6 +87,30 @@ void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCLayer* layer)
 
 void HelloWorld::selectiveScrollDidSelectLayer(CCLayer* layer)
 {
-    CCLOG("%s", __PRETTY_FUNCTION__);
+    CCArray* scrolls = this->getChildren();
+    
+    // find the caller 
+    SelectiveScroll* callerScroll = NULL;
+    for (int i = 0; i < scrolls->count(); i++) {
+        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
+        if (!scroll) continue;
+        
+        CCArray* items = scroll->getScrollLayer()->getChildren();
+        // is caller scroll layer
+        if (items->containsObject(layer)) {
+            callerScroll = scroll;
+        }
+    }
+    
+    // sync scroll points
+    for (int i = 0; i < scrolls->count(); i++) {
+        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
+        if (!scroll) continue;
+        
+        if (!callerScroll->isEqual(scroll)) {
+            CCPoint p = callerScroll->getScrollLayer()->getPosition();
+            scroll->scrollToPointWithAnimation(p);
+        }
+    }
 }
 

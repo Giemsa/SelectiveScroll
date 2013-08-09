@@ -30,6 +30,7 @@ private:
     virtual bool init();
     virtual void draw();
     virtual void visit();
+    virtual void onEnterTransitionDidFinish();
     
     bool _clipToBounds;
     bool _clipScrollInteraction;
@@ -51,8 +52,8 @@ private:
     // touch helper
     void* _selectedItem;
     void detectSelectedItem(CCPoint p);
-
-    // touch
+    
+    // SelectiveScroll (Delegate)
     virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
     virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
     virtual void ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent);
@@ -75,6 +76,10 @@ public:
     // clipToBounds Setter/Getter
     bool clipToBounds();
     void clipToBounds(bool clip);
+    
+    // scrollTo
+    void scrollToPoint(CCPoint p);
+    void scrollToPointWithAnimation(CCPoint p);
     
     // enable/disable scroll
     bool enableToScroll();
