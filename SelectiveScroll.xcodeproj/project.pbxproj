@@ -878,6 +878,7 @@
 		0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SelectiveScroll.cpp; path = Classes/SelectiveScroll.cpp; sourceTree = "<group>"; };
 		0BF5399117B1D1B400032155 /* SelectiveScroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SelectiveScroll.h; path = Classes/SelectiveScroll.h; sourceTree = "<group>"; };
 		0BF5399517B2714D00032155 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		0BF5399A17B32FDB00032155 /* SelectiveScrollDelegateProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectiveScrollDelegateProtocol.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2105,6 +2106,7 @@
 				0BF5398917B1C6D300032155 /* HelloWorldScene.cpp */,
 				0BF5399117B1D1B400032155 /* SelectiveScroll.h */,
 				0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */,
+				0BF5399A17B32FDB00032155 /* SelectiveScrollDelegateProtocol.h */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2578,6 +2580,7 @@
 				0BF5398F17B1C6D300032155 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

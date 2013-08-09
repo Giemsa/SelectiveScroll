@@ -4,6 +4,7 @@
 #define WINSIZE CCDirector::sharedDirector()->getWinSize()
 #define WINCENTER CCPointMake(WINSIZE.width*0.5, WINSIZE.height*0.5)
 
+using namespace std;
 using namespace cocos2d;
 using namespace CocosDenshion;
 
@@ -36,14 +37,57 @@ bool HelloWorld::init()
     this->addChild(_bgLayer);
     
     // setup scroll
-    for (int i = 0; i < BoundingEffect_Count; i++) {
-        CCSize size = CCSizeMake(WINSIZE.width / (BoundingEffect_Count + 2), WINSIZE.height * 0.9);
+    int count = BoundingEffect_Count;
+    for (int i = 0; i < count; i++) {
+        CCSize size = CCSizeMake(WINSIZE.width / (count + 2), WINSIZE.height * 0.7);
         SelectiveScroll* scroll = SelectiveScroll::create();
-        scroll->setPosition(CCSizeMake(WINSIZE.width / (BoundingEffect_Count + 1) * (i + 1), WINCENTER.y));
+        scroll->setPosition(CCSizeMake(WINSIZE.width / (count + 1) * (i + 1), WINCENTER.y));
         scroll->setBoundingEffectKind((BoundingEffect)i);
         scroll->setContentSize(size);
+        scroll->setDelegate(this);
+//        scroll->enableToScroll(i % 2);
         scroll->retain();
         this->addChild(scroll);
+        
+        float lastY = 0.0;
+        int rowCount = 50;
+        for (int ii = 0; ii < rowCount; ii++) {
+            CCLabelTTF* label = CCLabelTTF::create("", "Helvetica", 44);
+            
+            // position
+            float margin = 100;
+            float y = margin + (label->getScaleY() + margin) * ii;
+            label->setPosition(CCPointMake(size.width * 0.5, y));
+            scroll->getScrollLayer()->addChild(label);
+            
+            CCPoint p = label->getPosition();
+            string title = to_string(rowCount - ii) + " (" + to_string((int)p.y) + ")";
+            label->setString(title.c_str());
+            
+            lastY = p.y + margin;
+        }
+        scroll->setScrollSize(CCSizeMake(size.width, lastY));
     }
     return true;
 }
+
+
+#pragma mark - DELEGATE
+#pragma mark SelectiveScroll (Delegate)
+
+bool HelloWorld::isLayerSelected(CCLayer* layer)
+{
+    return ccc3BEqual(((CCLabelTTF*)layer)->getColor(), ccBLACK);
+}
+
+void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCLayer* layer)
+{
+    CCLabelTTF* label = (CCLabelTTF*)layer;
+    label->setColor(hi ? ccBLACK : ccWHITE);
+}
+
+void HelloWorld::selectiveScrollDidSelectLayer(CCLayer* layer)
+{
+    CCLOG("%s", __PRETTY_FUNCTION__);
+}
+

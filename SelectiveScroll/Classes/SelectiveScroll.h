@@ -10,6 +10,7 @@
 #define __SelectiveScroll__SelectiveScroll__
 
 #include "cocos2d.h"
+#include "SelectiveScrollDelegateProtocol.h"
 
 // Top / Bottom bounding effect kind.
 typedef enum {
@@ -30,10 +31,9 @@ private:
     virtual void draw();
     virtual void visit();
     
-    CC_SYNTHESIZE(CCLayerColor*, _bgLayer, BGLayer);
-    CC_SYNTHESIZE(CCLayerColor*, _scrollLayer, ScrollLayer);
-
     bool _clipToBounds;
+    bool _clipScrollInteraction;
+    bool _enableToScroll;
     
     // color
     ccColor4B _scrollLayerColor;
@@ -48,6 +48,10 @@ private:
     CCPoint _lastTouchPoint;
     CCPoint _beganScrollPosition;
     
+    // touch helper
+    void* _selectedItem;
+    void detectSelectedItem(CCPoint p);
+
     // touch
     virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
     virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
@@ -55,7 +59,14 @@ private:
     
 public:
     CREATE_FUNC(SelectiveScroll);
+    
+    // delegate
+    CC_SYNTHESIZE(SelectiveScrollDelegate*, _delegate, Delegate);
+    
+    // layer
     CC_SYNTHESIZE(CCSize, _scrollSize, ScrollSize);
+    CC_SYNTHESIZE(CCLayerColor*, _bgLayer, BGLayer);
+    CC_SYNTHESIZE(CCLayerColor*, _scrollLayer, ScrollLayer);
     
     // Effect kind can set individually.
     void setBoundingEffectKind(BoundingEffect effect); // both
@@ -64,6 +75,12 @@ public:
     // clipToBounds Setter/Getter
     bool clipToBounds();
     void clipToBounds(bool clip);
+    
+    // enable/disable scroll
+    bool enableToScroll();
+    void enableToScroll(bool enable);
 };
 
 #endif /* defined(__SelectiveScroll__SelectiveScroll__) */
+
+
