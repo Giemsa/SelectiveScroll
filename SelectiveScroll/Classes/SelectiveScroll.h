@@ -55,7 +55,9 @@ private:
     // touch helper
     void* _selectedItem;
     void detectSelectedItem(CCPoint p);
-    
+    bool isScrollVertical();
+    bool isScrollHorizontal();
+    CCAction* fitToAction(CCPoint toPoint);
     
     // SelectiveScroll (Delegate)
     virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
@@ -82,6 +84,7 @@ public:
     void clipToBounds(bool clip);
     
     // scrollTo
+    void scrollToTop();
     void scrollToPoint(CCPoint p);
     void scrollToPointWithAnimation(CCPoint p);
     

@@ -29,6 +29,7 @@ SelectiveScroll::SelectiveScroll()
 ,   _clipScrollInteraction(true)
 ,   _enableToScroll(true)
 ,   _scrollSize(CCSizeMake(600, 600))
+,   _runningAction(NULL)
 {}
 
 SelectiveScroll::~SelectiveScroll() {}
@@ -96,12 +97,17 @@ void SelectiveScroll::visit()
 
 void SelectiveScroll::onEnterTransitionDidFinish()
 {
-    _scrollLayer->setPosition(CCPointMake(0.0, this->getContentSize().height - _scrollSize.height));
+    this->scrollToTop();
 }
 
 
 #pragma mark - UI
 #pragma mark Scroll
+
+void SelectiveScroll::scrollToTop()
+{
+    this->scrollToPoint(CCPointMake(0.0, this->getContentSize().height - _scrollSize.height));
+}
 
 void SelectiveScroll::scrollToPoint(CCPoint p)
 {
@@ -118,7 +124,7 @@ void SelectiveScroll::scrollToPointWithAnimation(CCPoint p)
 
 #pragma mark Touch
 
-// helper
+// helper func
 void* easeAction(CCMoveTo* moveTo, BoundingEffect effect)
 {
     void* action;
@@ -129,6 +135,72 @@ void* easeAction(CCMoveTo* moveTo, BoundingEffect effect)
         case BoundingEffectElastic: action = CCEaseElasticOut::create(moveTo);      break;
     }
     return action;
+}
+
+bool SelectiveScroll::isScrollVertical()
+{
+    return this->getContentSize().width < _scrollSize.width;
+}
+
+bool SelectiveScroll::isScrollHorizontal() 
+{
+    return this->getContentSize().height < _scrollSize.height;
+}
+
+CCAction* SelectiveScroll::fitToAction(CCPoint delta)
+{
+    CCPoint toPoint = CCPointMake(_scrollLayer->getPositionX() + delta.x, _scrollLayer->getPositionY() + delta.y);
+
+    float top = this->getContentSize().height - _scrollSize.height;
+    float right = this->getContentSize().width - _scrollSize.width;
+    float bottom = 0.0;
+    float left = 0.0;
+    
+    CCPoint fitPoint = CCPointZero;
+    
+    if (toPoint.y < top) {
+        // top left
+        if (left < toPoint.x) {
+            fitPoint = CCPointMake(left, top);
+        }
+        // top right
+        else if (toPoint.x < right) {
+            fitPoint = CCPointMake(right, top);
+        }
+        // top
+        else {
+            fitPoint = CCPointMake(toPoint.x, top);
+        }
+    }
+    else if (bottom < toPoint.y) {
+        // bottom right
+        if (toPoint.x < right) {
+            fitPoint = CCPointMake(right, bottom);
+        }
+        // bottom left
+        else if (left < toPoint.x) {
+            fitPoint = CCPointMake(left, bottom);
+        }
+        // bottom
+        else {
+            fitPoint = CCPointMake(toPoint.x, bottom);
+        }
+    }
+    // right
+    else if (isScrollVertical() && toPoint.x < right) {
+        fitPoint = CCPointMake(right, toPoint.y);
+    }
+    // left
+    else if (isScrollVertical() && left < toPoint.x) {
+        fitPoint = CCPointMake(left, toPoint.y);
+    }
+    else {
+        CCPoint byPoint = CCPointMake((isScrollVertical() ? delta.x : 0.0), (isScrollHorizontal() ? delta.y : 0.0));
+        CCMoveBy* moveBy = CCMoveBy::create(0.87, byPoint);
+        return (CCAction*)CCEaseSineOut::create(moveBy);
+    }
+    CCMoveTo* moveTo = CCMoveTo::create(1.0, fitPoint);
+    return (CCAction*)easeAction(moveTo, _topBoundingEffect);
 }
 
 void SelectiveScroll::detectSelectedItem(CCPoint p)
@@ -145,6 +217,8 @@ void SelectiveScroll::detectSelectedItem(CCPoint p)
     
     // search selected item
     CCArray* sprites = _scrollLayer->getChildren();
+    if (sprites == NULL) return;
+    
     for (int i = 0; i < sprites->count(); i++) {
         CCLayer* layer = (CCLayer*)sprites->objectAtIndex(i);
         bool isSelected = !cancelSelection && (CCSprite*)layer->boundingBox().containsPoint(pointOnScrollLayer);
@@ -172,8 +246,10 @@ bool SelectiveScroll::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     if (_clipScrollInteraction && !this->boundingBox().containsPoint(p)) {
         return false;
     }
-    // stop scrolling animation,
-    this->stopAction((CCAction*)_runningAction);
+    // stop scrolling animation.
+    if (_runningAction) {
+        this->stopAction((CCAction*)_runningAction);
+    }
     
     // save points for calc.
     _lastTouchPoint = p;
@@ -192,8 +268,12 @@ void SelectiveScroll::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
     CCPoint p = pTouch->getLocationInView();
     
     if (_enableToScroll) {
-//        _scrollLayer->setPositionX(_beganScrollPosition.x - _beganTouchPoint.x + p.x);
-        _scrollLayer->setPositionY(_beganScrollPosition.y + _beganTouchPoint.y - p.y);
+        if (isScrollVertical()) {
+            _scrollLayer->setPositionX(_beganScrollPosition.x - _beganTouchPoint.x + p.x);
+        }
+        else if (isScrollHorizontal()) {
+            _scrollLayer->setPositionY(_beganScrollPosition.y + _beganTouchPoint.y - p.y);
+        }
     }
     
     // save last (technically it is previous location)
@@ -210,33 +290,11 @@ void SelectiveScroll::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
     if (_enableToScroll) {
         // speed scroll correction
         CCPoint delta = CCPointMake(_lastTouchPoint.x - p.x, _lastTouchPoint.y - p.y);
-        delta.x *= (14.0 <= abs(delta.x) ? 12.0 : 0.0);
+        delta.x *= -(14.0 <= abs(delta.x) ? 12.0 : 0.0);
         delta.y *= (14.0 <= abs(delta.y) ? 12.0 : 0.0);
         
-        // scroll
-        _scrollLayer->setPositionY(_beganScrollPosition.y + _beganTouchPoint.y - p.y);
-        
-//        float offsetX = _scrollLayer->getPositionX() + delta.x;
-//        float topX = this->getContentSize().width - _scrollLayer->getContentSize().width;
-        float topY = this->getContentSize().height - _scrollLayer->getContentSize().height;
-        float offsetY = _scrollLayer->getPositionY() + delta.y;
-        
-        // animation
-        // (bounce top)
-        if (offsetY<= topY) {
-            CCMoveTo* moveTo = CCMoveTo::create(1.0, CCPointMake(0, topY));
-            _runningAction = (CCAction*)easeAction(moveTo, _topBoundingEffect);
-        }
-        // (bounce bottom)
-        else if (0 <= offsetY) {
-            CCMoveTo* moveTo = CCMoveTo::create(1.0, CCPointMake(0, 0));
-            _runningAction = (CCAction*)easeAction(moveTo, _bottomBoundingEffect);
-        }
-        // (momentum scrolling)
-        else {
-            CCMoveBy* moveBy = CCMoveBy::create(0.87, CCPointMake(0, delta.y));
-            _runningAction = CCEaseSineOut::create(moveBy);
-        }
+        // fit
+        _runningAction = this->fitToAction(delta);
         _scrollLayer->runAction((CCAction*)_runningAction);
         
         // has selected item.

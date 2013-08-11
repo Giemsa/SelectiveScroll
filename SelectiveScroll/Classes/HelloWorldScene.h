@@ -7,6 +7,9 @@
 class HelloWorld : public cocos2d::CCLayer, public SelectiveScrollDelegate
 {
 public:
+    HelloWorld();
+    virtual ~HelloWorld();
+    
     CC_SYNTHESIZE(SelectiveScroll*, _scroll, Scroll);
     CC_SYNTHESIZE(CCLayerColor*, _bgLayer, BGLayer);
     

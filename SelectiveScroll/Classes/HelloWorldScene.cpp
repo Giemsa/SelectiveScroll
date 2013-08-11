@@ -1,12 +1,23 @@
 #include "HelloWorldScene.h"
 #include "SimpleAudioEngine.h"
 
+// scene
+#include "HorizonScene.h"
+
 #define WINSIZE CCDirector::sharedDirector()->getWinSize()
 #define WINCENTER CCPointMake(WINSIZE.width*0.5, WINSIZE.height*0.5)
 
 using namespace std;
 using namespace cocos2d;
 using namespace CocosDenshion;
+
+HelloWorld::HelloWorld() {}
+
+HelloWorld::~HelloWorld()
+{
+    CCLOG("%s", __PRETTY_FUNCTION__);
+    
+}
 
 CCScene* HelloWorld::scene()
 {
@@ -37,15 +48,15 @@ bool HelloWorld::init()
     this->addChild(_bgLayer);
     
     // setup scroll
-    int count = 1;
+    int count = BoundingEffect_Count;
     for (int i = 0; i < count; i++) {
-        CCSize size = CCSizeMake(WINSIZE.width * 0.7, WINSIZE.height * 0.7);
+        CCSize size = CCSizeMake(WINSIZE.width / count * 0.7, WINSIZE.height * 0.7);
         SelectiveScroll* scroll = SelectiveScroll::create();
         scroll->setPosition(CCSizeMake(WINSIZE.width / (count + 1) * (i + 1), WINCENTER.y));
-        scroll->setBoundingEffectKind(BoundingEffectElastic);
+        scroll->setBoundingEffectKind((BoundingEffect)i);
         scroll->setContentSize(size);
         scroll->setDelegate(this);
-        scroll->clipToBounds(false);
+        scroll->clipToBounds(true);
         scroll->retain();
         
         float lastY = 0.0;
@@ -65,7 +76,7 @@ bool HelloWorld::init()
             
             lastY = p.y + margin;
         }
-        scroll->setScrollSize(CCSizeMake(size.width * 3.0, lastY));
+        scroll->setScrollSize(CCSizeMake(size.width, lastY));
         this->addChild(scroll);
     }
     return true;
@@ -88,30 +99,36 @@ void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCLayer* layer)
 
 void HelloWorld::selectiveScrollDidSelectLayer(CCLayer* layer)
 {
-    CCArray* scrolls = this->getChildren();
+    CCTransitionFade* fade = CCTransitionFade::create(0.5, HorizonScene::scene(), ccBLACK);
+    CCDirector::sharedDirector()->replaceScene(fade);
     
-    // find the caller 
-    SelectiveScroll* callerScroll = NULL;
-    for (int i = 0; i < scrolls->count(); i++) {
-        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
-        if (!scroll) continue;
-        
-        CCArray* items = scroll->getScrollLayer()->getChildren();
-        // is caller scroll layer
-        if (items->containsObject(layer)) {
-            callerScroll = scroll;
-        }
-    }
-    
-    // sync scroll points
-    for (int i = 0; i < scrolls->count(); i++) {
-        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
-        if (!scroll) continue;
-        
-        if (!callerScroll->isEqual(scroll)) {
-            CCPoint p = callerScroll->getScrollLayer()->getPosition();
-            scroll->scrollToPointWithAnimation(p);
-        }
-    }
+//    CCArray* scrolls = this->getChildren();
+//    
+//    // find the caller 
+//    SelectiveScroll* callerScroll = NULL;
+//    for (int i = 0; i < scrolls->count(); i++) {
+//        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
+//        if (!scroll) continue;
+//        
+//        CCArray* items = scroll->getScrollLayer()->getChildren();
+//        // is caller scroll layer
+//        if (items->containsObject(layer)) {
+//            callerScroll = scroll;
+//        }
+//    }
+//    
+//    // sync scroll points
+//    for (int i = 0; i < scrolls->count(); i++) {
+//        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
+//        if (!scroll) continue;
+//        
+//        if (!callerScroll->isEqual(scroll)) {
+//            CCPoint p = callerScroll->getScrollLayer()->getPosition();
+//            scroll->scrollToPointWithAnimation(p);
+//        }
+//    }
 }
+
+
+
 
