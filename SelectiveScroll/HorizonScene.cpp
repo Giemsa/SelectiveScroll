@@ -40,30 +40,31 @@ bool HorizonScene::init()
     CCSize size = CCSizeMake(WINSIZE.width * 0.8, WINSIZE.height * 0.8);
     SelectiveScroll* scroll = SelectiveScroll::create();
     scroll->setPosition(WINCENTER.x, WINCENTER.y);
-    scroll->setBoundingEffectKind(BoundingEffectElastic);
+    scroll->setBoundingEffectKind(BoundingEffectBack);
     scroll->setContentSize(size);
     scroll->setDelegate(this);
     scroll->retain();
     
     // add labels
-    float lastY = 0.0;
     int rowCount = 50;
-    for (int ii = 0; ii < rowCount; ii++) {
+    float lastX = 0.0;
+    for (int i = 0; i < rowCount; i++) {
         CCLabelTTF* label = CCLabelTTF::create("", "Helvetica", 44);
         
         // position
-        float margin = 100;
-        float y = margin + (label->getScaleY() + margin) * ii;
-        label->setPosition(CCPointMake(size.width * 0.5, y));
+        label->setPosition(CCPointMake(size.width * (i + 1) * 0.333, size.height * 0.5));
+        
+        // add
         scroll->getScrollLayer()->addChild(label);
         
         CCPoint p = label->getPosition();
-        string title = to_string(rowCount - ii) + " (" + to_string((int)p.y) + ")";
+        string title = to_string(rowCount - i) + " (" + to_string((int)p.y) + ")";
         label->setString(title.c_str());
         
-        lastY = p.y + margin;
+        CCRect rect = label->boundingBox();
+        lastX = rect.origin.x + rect.size.width * 2.0;
     }
-    scroll->setScrollSize(CCSizeMake(size.width, lastY));
+    scroll->setScrollSize(CCSizeMake(lastX, size.height));
     scroll->scrollToTop();
     
     this->addChild(scroll);

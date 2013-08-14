@@ -16,7 +16,6 @@ HelloWorld::HelloWorld() {}
 HelloWorld::~HelloWorld()
 {
     CCLOG("%s", __PRETTY_FUNCTION__);
-    
 }
 
 CCScene* HelloWorld::scene()
@@ -99,7 +98,7 @@ void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCLayer* layer)
 
 void HelloWorld::selectiveScrollDidSelectLayer(CCLayer* layer)
 {
-    CCTransitionFade* fade = CCTransitionFade::create(0.5, HorizonScene::scene(), ccBLACK);
+    CCTransitionFade* fade = CCTransitionFade::create(0.5, HorizonScene::scene(), ccWHITE);
     CCDirector::sharedDirector()->replaceScene(fade);
     
 //    CCArray* scrolls = this->getChildren();

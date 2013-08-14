@@ -150,15 +150,13 @@ bool SelectiveScroll::isScrollHorizontal()
 CCAction* SelectiveScroll::fitToAction(CCPoint delta)
 {
     CCPoint toPoint = CCPointMake(_scrollLayer->getPositionX() + delta.x, _scrollLayer->getPositionY() + delta.y);
-
+    CCPoint fitPoint = CCPointZero;
     float top = this->getContentSize().height - _scrollSize.height;
     float right = this->getContentSize().width - _scrollSize.width;
     float bottom = 0.0;
     float left = 0.0;
     
-    CCPoint fitPoint = CCPointZero;
-    
-    if (toPoint.y < top) {
+    if (isScrollHorizontal() && toPoint.y < top) {
         // top left
         if (left < toPoint.x) {
             fitPoint = CCPointMake(left, top);
@@ -172,7 +170,7 @@ CCAction* SelectiveScroll::fitToAction(CCPoint delta)
             fitPoint = CCPointMake(toPoint.x, top);
         }
     }
-    else if (bottom < toPoint.y) {
+    else if (isScrollHorizontal() && bottom < toPoint.y) {
         // bottom right
         if (toPoint.x < right) {
             fitPoint = CCPointMake(right, bottom);
@@ -188,11 +186,11 @@ CCAction* SelectiveScroll::fitToAction(CCPoint delta)
     }
     // right
     else if (isScrollVertical() && toPoint.x < right) {
-        fitPoint = CCPointMake(right, toPoint.y);
+        fitPoint = CCPointMake(right, top);
     }
     // left
     else if (isScrollVertical() && left < toPoint.x) {
-        fitPoint = CCPointMake(left, toPoint.y);
+        fitPoint = CCPointMake(left, top);
     }
     else {
         CCPoint byPoint = CCPointMake((isScrollVertical() ? delta.x : 0.0), (isScrollHorizontal() ? delta.y : 0.0));
@@ -209,8 +207,10 @@ void SelectiveScroll::detectSelectedItem(CCPoint p)
     
     // convert "view touch point" to "layer touch point"
     CCRect rect = this->boundingBox();
-    CCPoint pointOnThisLayer = ccp(p.x - rect.origin.x, p.y - rect.origin.y);
-    CCPoint pointOnScrollLayer = CCPointMake(pointOnThisLayer.x, rect.size.height - _scrollLayer->getPositionY() - pointOnThisLayer.y);
+    CCPoint pointOnThisLayer = ccp((p.x - rect.origin.x), (p.y - rect.origin.y));
+    CCPoint pointOnScrollLayer = CCPointZero;
+    pointOnScrollLayer.x = -_scrollLayer->getPositionX() + pointOnThisLayer.x;
+    pointOnScrollLayer.y = rect.size.height - _scrollLayer->getPositionY() - pointOnThisLayer.y;
     
     // reset first.
     _selectedItem = NULL;
@@ -290,7 +290,7 @@ void SelectiveScroll::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
     if (_enableToScroll) {
         // speed scroll correction
         CCPoint delta = CCPointMake(_lastTouchPoint.x - p.x, _lastTouchPoint.y - p.y);
-        delta.x *= -(14.0 <= abs(delta.x) ? 12.0 : 0.0);
+        delta.x *= -(14.0 <= abs(delta.x) ? 14.0 : 0.0);
         delta.y *= (14.0 <= abs(delta.y) ? 12.0 : 0.0);
         
         // fit
