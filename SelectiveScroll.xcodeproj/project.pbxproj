@@ -876,7 +876,7 @@
 		0BF5398617B1C6D300032155 /* AppDelegate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AppDelegate.cpp; path = Classes/AppDelegate.cpp; sourceTree = "<group>"; };
 		0BF5398817B1C6D300032155 /* HelloWorldScene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HelloWorldScene.h; path = Classes/HelloWorldScene.h; sourceTree = "<group>"; };
 		0BF5398917B1C6D300032155 /* HelloWorldScene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = HelloWorldScene.cpp; path = Classes/HelloWorldScene.cpp; sourceTree = "<group>"; };
-		0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SelectiveScroll.cpp; path = Classes/SelectiveScroll.cpp; sourceTree = "<group>"; };
+		0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = SelectiveScroll.cpp; path = Classes/SelectiveScroll.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		0BF5399117B1D1B400032155 /* SelectiveScroll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SelectiveScroll.h; path = Classes/SelectiveScroll.h; sourceTree = "<group>"; };
 		0BF5399517B2714D00032155 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		0BF5399A17B32FDB00032155 /* SelectiveScrollDelegateProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectiveScrollDelegateProtocol.h; sourceTree = "<group>"; };
@@ -2103,14 +2103,14 @@
 		0BF5398417B1C6D300032155 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				0BF5398517B1C6D300032155 /* AppDelegate.h */,
 				0BF5398617B1C6D300032155 /* AppDelegate.cpp */,
-				0BF5398817B1C6D300032155 /* HelloWorldScene.h */,
+				0BF5398517B1C6D300032155 /* AppDelegate.h */,
 				0BF5398917B1C6D300032155 /* HelloWorldScene.cpp */,
-				EF01C4AC17B7223F001D6A5B /* HorizonScene.h */,
+				0BF5398817B1C6D300032155 /* HelloWorldScene.h */,
 				EF01C4AB17B7223F001D6A5B /* HorizonScene.cpp */,
-				0BF5399117B1D1B400032155 /* SelectiveScroll.h */,
+				EF01C4AC17B7223F001D6A5B /* HorizonScene.h */,
 				0BF5399017B1D1B400032155 /* SelectiveScroll.cpp */,
+				0BF5399117B1D1B400032155 /* SelectiveScroll.h */,
 				0BF5399A17B32FDB00032155 /* SelectiveScrollDelegateProtocol.h */,
 			);
 			name = Classes;

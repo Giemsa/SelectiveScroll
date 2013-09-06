@@ -12,14 +12,15 @@
 USING_NS_CC;
 using namespace std;
 
-#define CANCEL_SELECTION_THRESHOLD 4.0
+#define CANCEL_SELECTION_THRESHOLD  4.0
+#define RUNNING_ANIMATION_TAG       1
 
 // MEMO:
 // Define Layer order.
 typedef enum {
-    LayerOrder_BGLayer,
-    LayerOrder_ScrollLayer,
-} LayerOrder;
+    ZIndex_BGLayer,
+    ZIndex_ScrollLayer,
+} ZIndex;
 
 
 SelectiveScroll::SelectiveScroll()
@@ -32,16 +33,22 @@ SelectiveScroll::SelectiveScroll()
 ,   _runningAction(NULL)
 {}
 
-SelectiveScroll::~SelectiveScroll() {}
+SelectiveScroll::~SelectiveScroll()
+{
+    CC_SAFE_RELEASE(_bgLayer);
+    CC_SAFE_RELEASE(_scrollLayer);
+}
 
 
-#pragma mark - Init
+#pragma mark - CCLayer Lifecycle
 
 bool SelectiveScroll::init()
 {
     if (!CCLayer::init()) {
         return false;
     }
+    _delegate = NULL;
+    
     // this layer
     // (enable single touch)
     this->setTouchEnabled(true);
@@ -53,15 +60,15 @@ bool SelectiveScroll::init()
     // bgLayer
     CCSize size = this->getContentSize();
     _bgLayer = CCLayerColor::create(_bgColor, size.width, size.height);
-    this->addChild(_bgLayer, LayerOrder_BGLayer);
+    this->addChild(_bgLayer, ZIndex_BGLayer);
     _bgLayer->setAnchorPoint(CCPointZero);  
     _bgLayer->retain();
     
     // scrollLayer
     _scrollLayer = CCLayerColor::create(_scrollLayerColor, _scrollSize.width, _scrollSize.height);
-    this->addChild(_scrollLayer, LayerOrder_ScrollLayer);
-    _scrollLayer->setAnchorPoint(CCPointMake(0.0, 0.0));
     _scrollLayer->retain();
+    this->addChild(_scrollLayer, ZIndex_ScrollLayer);
+    _scrollLayer->setAnchorPoint(CCPointMake(0.0, 0.0));
     
     return true;
 }
@@ -84,9 +91,12 @@ void SelectiveScroll::draw()
 void SelectiveScroll::visit()
 {
     if (_clipToBounds) {
+        // not visible, then no need to clip
+        if (!this->isVisible()) return;
+        
         glEnable(GL_SCISSOR_TEST);
-        CCRect rect = this->boundingBox();
-        CCEGLView::sharedOpenGLView()->setScissorInPoints(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+        CCRect bound = this->absoluteBoundingBox();
+        CCEGLView::sharedOpenGLView()->setScissorInPoints(bound.origin.x, bound.origin.y, bound.size.width, bound.size.height);
         CCLayer::visit();
         glDisable(GL_SCISSOR_TEST);
     }
@@ -97,7 +107,7 @@ void SelectiveScroll::visit()
 
 void SelectiveScroll::onEnterTransitionDidFinish()
 {
-    this->scrollToTop();
+    //    this->scrollToTop();
 }
 
 
@@ -124,12 +134,11 @@ void SelectiveScroll::scrollToPointWithAnimation(CCPoint p)
 
 #pragma mark Touch
 
-// helper func
+// returns Eased Action
 void* easeAction(CCMoveTo* moveTo, BoundingEffect effect)
 {
-    void* action;
+    void* action = CCEaseExponentialOut::create(moveTo);
     switch ((int)effect) {
-        case BoundingEffectNormal:  action = CCEaseExponentialOut::create(moveTo);  break;
         case BoundingEffectBack:    action = CCEaseBackOut::create(moveTo);         break;
         case BoundingEffectBounce:  action = CCEaseBounceOut::create(moveTo);       break;
         case BoundingEffectElastic: action = CCEaseElasticOut::create(moveTo);      break;
@@ -137,14 +146,46 @@ void* easeAction(CCMoveTo* moveTo, BoundingEffect effect)
     return action;
 }
 
-bool SelectiveScroll::isScrollVertical()
+// returns bounds on Scene.
+CCRect SelectiveScroll::absoluteBoundingBox()
+{
+    CCNode* parentLayer = this->getParent();
+    if (!parentLayer) return this->boundingBox();
+    
+    CCRect bound = this->boundingBox();
+    CCNode* runningScene = CCDirector::sharedDirector()->getRunningScene();
+    int layerDepth = 0;
+    const int LayerHierarchyMax = 100.0;
+    
+    // search for running scene. (to avoid infinity-loop, max 100 hierarchies are supported)
+    while (!parentLayer->isEqual(runningScene)) {
+        if (LayerHierarchyMax <= layerDepth) break;
+        
+        bound.origin.x += parentLayer->boundingBox().origin.x;
+        bound.origin.y += parentLayer->boundingBox().origin.y;
+        
+        parentLayer = parentLayer->getParent();
+        if (!parentLayer) break;
+        layerDepth++;
+    }
+    return bound;
+}
+
+bool SelectiveScroll::canScrollVertical()
 {
     return this->getContentSize().width < _scrollSize.width;
 }
 
-bool SelectiveScroll::isScrollHorizontal() 
+bool SelectiveScroll::canScrollHorizontal() 
 {
     return this->getContentSize().height < _scrollSize.height;
+}
+
+void SelectiveScroll::pagingScrollDidEndCallback(CCNode* node)
+{
+    if (_delegate) {
+        _delegate->pagingScrollDidEnd(node, this);
+    }
 }
 
 CCAction* SelectiveScroll::fitToAction(CCPoint delta)
@@ -156,7 +197,7 @@ CCAction* SelectiveScroll::fitToAction(CCPoint delta)
     float bottom = 0.0;
     float left = 0.0;
     
-    if (isScrollHorizontal() && toPoint.y < top) {
+    if (this->canScrollHorizontal() && toPoint.y < top) {
         // top left
         if (left < toPoint.x) {
             fitPoint = CCPointMake(left, top);
@@ -170,7 +211,7 @@ CCAction* SelectiveScroll::fitToAction(CCPoint delta)
             fitPoint = CCPointMake(toPoint.x, top);
         }
     }
-    else if (isScrollHorizontal() && bottom < toPoint.y) {
+    else if (this->canScrollHorizontal() && bottom < toPoint.y) {
         // bottom right
         if (toPoint.x < right) {
             fitPoint = CCPointMake(right, bottom);
@@ -185,17 +226,79 @@ CCAction* SelectiveScroll::fitToAction(CCPoint delta)
         }
     }
     // right
-    else if (isScrollVertical() && toPoint.x < right) {
+    else if (canScrollVertical() && toPoint.x < right) {
         fitPoint = CCPointMake(right, top);
     }
     // left
-    else if (isScrollVertical() && left < toPoint.x) {
+    else if (canScrollVertical() && left < toPoint.x) {
         fitPoint = CCPointMake(left, top);
     }
     else {
-        CCPoint byPoint = CCPointMake((isScrollVertical() ? delta.x : 0.0), (isScrollHorizontal() ? delta.y : 0.0));
-        CCMoveBy* moveBy = CCMoveBy::create(0.87, byPoint);
-        return (CCAction*)CCEaseSineOut::create(moveBy);
+        CCPoint byPoint = CCPointMake((canScrollVertical() ? delta.x : 0.0), (canScrollHorizontal() ? delta.y : 0.0));
+        CCPoint toPoint = _scrollLayer->getPosition() + byPoint;
+        
+        bool isPagingEnabled = false;
+        
+        // MEMO:
+        // invert position.x while searching paging point.
+        // (scrollLayer position goes negative when offset goes positive)
+        toPoint.x *= -1.0; 
+        
+        // search paging point
+        vector<CCPoint> pagingPoints;
+        int nearestIndex = 0;
+        CCArray* children = _scrollLayer->getChildren();
+        for (int i = 0; i < children->count(); i++) {
+            CCNode* node = dynamic_cast<CCNode*>(children->objectAtIndex(i));
+            if (!node) continue;
+            
+            if (_delegate && _delegate->isPagingPointNode(node, this)) {
+                CCPoint p = node->getPosition();
+                p.x -= this->getContentSize().width * 0.5;
+                pagingPoints.push_back(p);
+                
+                isPagingEnabled = true;
+            }
+        }
+        if (pagingPoints.size() != 0) {
+            // calc distances between "scroll offset" & "paging point".
+            vector<float> distances;
+            vector<CCPoint>::iterator iP = pagingPoints.begin();
+            for (; iP != pagingPoints.end(); iP++) {
+                CCPoint p = *iP;
+                float distance = p.getDistance(toPoint);
+                distances.push_back(distance);
+            }
+            // find the neareset "paging point".
+            vector<float>::iterator iD = distances.begin();
+            float nearestDistance;
+            for (int i = 0; iD != distances.end(); i++, iD++) {
+                if (i == 0 || *iD < nearestDistance) {
+                    nearestDistance = *iD;
+                    nearestIndex = i;
+                }
+            }
+            toPoint = pagingPoints[nearestIndex];
+            toPoint = CCPointMake((canScrollVertical() ? toPoint.x : 0.0), (canScrollHorizontal() ? toPoint.y : 0.0));
+        }
+        // back to positive.
+        toPoint.x *= -1.0;
+        
+        // will end callback
+        if (isPagingEnabled) {
+            CCNode* targetNode = dynamic_cast<CCNode*>(children->objectAtIndex(nearestIndex));
+            _delegate->pagingScrollWillEnd(targetNode, this);
+        }
+        CCMoveTo* moveTo = CCMoveTo::create(0.87, toPoint);
+        CCArray* actions = CCArray::create(CCEaseSineOut::create(moveTo), NULL);
+        
+        // did end callback
+        if (isPagingEnabled) {
+            void* node = children->objectAtIndex(nearestIndex);
+            CCCallFuncND* didEndCallback = CCCallFuncND::create(this, callfuncND_selector(SelectiveScroll::pagingScrollDidEndCallback), node);
+            actions->addObject(didEndCallback);
+        }
+        return (CCAction*)CCSequence::create(actions);
     }
     CCMoveTo* moveTo = CCMoveTo::create(1.0, fitPoint);
     return (CCAction*)easeAction(moveTo, _topBoundingEffect);
@@ -203,11 +306,19 @@ CCAction* SelectiveScroll::fitToAction(CCPoint delta)
 
 void SelectiveScroll::detectSelectedItem(CCPoint p)
 {
-    bool cancelSelection = (CANCEL_SELECTION_THRESHOLD < abs(_beganTouchPoint.y - _lastTouchPoint.y));
+    bool cancelSelection;
+    
+    if (this->canScrollHorizontal()) {
+        cancelSelection = (CANCEL_SELECTION_THRESHOLD < abs(_beganTouchPoint.y - _lastTouchPoint.y));
+    }
+    else {
+        cancelSelection = (CANCEL_SELECTION_THRESHOLD < abs(_beganTouchPoint.x - _lastTouchPoint.x));
+    }
     
     // convert "view touch point" to "layer touch point"
-    CCRect rect = this->boundingBox();
-    CCPoint pointOnThisLayer = ccp((p.x - rect.origin.x), (p.y - rect.origin.y));
+    CCRect rect = this->absoluteBoundingBox();
+    float winHeight = CCDirector::sharedDirector()->getWinSize().height;
+    CCPoint pointOnThisLayer = ccp((p.x - rect.origin.x), (p.y - (winHeight - rect.size.height) + rect.origin.y));
     CCPoint pointOnScrollLayer = CCPointZero;
     pointOnScrollLayer.x = -_scrollLayer->getPositionX() + pointOnThisLayer.x;
     pointOnScrollLayer.y = rect.size.height - _scrollLayer->getPositionY() - pointOnThisLayer.y;
@@ -220,17 +331,18 @@ void SelectiveScroll::detectSelectedItem(CCPoint p)
     if (sprites == NULL) return;
     
     for (int i = 0; i < sprites->count(); i++) {
-        CCLayer* layer = (CCLayer*)sprites->objectAtIndex(i);
-        bool isSelected = !cancelSelection && (CCSprite*)layer->boundingBox().containsPoint(pointOnScrollLayer);
+        CCNode* node = dynamic_cast<CCNode*>(sprites->objectAtIndex(i));
+        if (!node) return;
+        
+        bool isSelected = !cancelSelection && (CCSprite*)node->boundingBox().containsPoint(pointOnScrollLayer);
         if (isSelected) {
-            _selectedItem = (CCSprite*)layer;
+            _selectedItem = (CCSprite*)node;
         }
         // delegate callback 
-        SelectiveScrollDelegate* delegate = this->getDelegate();
-        if (delegate) {
+        if (_delegate) {
             // if selection state hasn't changed, change it.
-            if (delegate->isLayerSelected(layer) != isSelected) {
-                delegate->selectiveScrollHighlightLayer(isSelected, layer);
+            if (_delegate->isLayerSelected(node, this) != isSelected) {
+                _delegate->selectiveScrollHighlightLayer(isSelected, node, this);
             }
         }
     }
@@ -242,14 +354,18 @@ bool SelectiveScroll::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     CCPoint p = pTouch->getLocationInView();
     
+    // IMPORTANT:
+    // convert GL-coordinate to View-coordinate.
+    CCSize winSize =  CCDirector::sharedDirector()->getWinSize();
+    CCRect viewRect = this->absoluteBoundingBox();
+    viewRect.origin.y = winSize.height - viewRect.size.height - viewRect.origin.y;
+    
     // is outside of this layer, ignore touch event.
-    if (_clipScrollInteraction && !this->boundingBox().containsPoint(p)) {
+    if (_clipScrollInteraction && !viewRect.containsPoint(p)) {
         return false;
     }
     // stop scrolling animation.
-    if (_runningAction) {
-        this->stopAction((CCAction*)_runningAction);
-    }
+    this->stopAction((CCAction*)_runningAction);
     
     // save points for calc.
     _lastTouchPoint = p;
@@ -268,10 +384,10 @@ void SelectiveScroll::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
     CCPoint p = pTouch->getLocationInView();
     
     if (_enableToScroll) {
-        if (isScrollVertical()) {
+        if (canScrollVertical()) {
             _scrollLayer->setPositionX(_beganScrollPosition.x - _beganTouchPoint.x + p.x);
         }
-        else if (isScrollHorizontal()) {
+        else if (canScrollHorizontal()) {
             _scrollLayer->setPositionY(_beganScrollPosition.y + _beganTouchPoint.y - p.y);
         }
     }
@@ -290,19 +406,20 @@ void SelectiveScroll::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
     if (_enableToScroll) {
         // speed scroll correction
         CCPoint delta = CCPointMake(_lastTouchPoint.x - p.x, _lastTouchPoint.y - p.y);
-        delta.x *= -(14.0 <= abs(delta.x) ? 14.0 : 0.0);
+        delta.x *= -(14.0 <= abs(delta.x) ? 12.0 : 0.0);
         delta.y *= (14.0 <= abs(delta.y) ? 12.0 : 0.0);
         
         // fit
-        _runningAction = this->fitToAction(delta);
-        _scrollLayer->runAction((CCAction*)_runningAction);
+        CCAction* fitAction = this->fitToAction(delta);
+        _scrollLayer->runAction(fitAction);
+        _runningAction = fitAction;
         
         // has selected item.
         if (_selectedItem != NULL) {
             SelectiveScrollDelegate* delegate = this->getDelegate();
             if (delegate) {
-                delegate->selectiveScrollHighlightLayer(false, (CCLayer*)_selectedItem);
-                delegate->selectiveScrollDidSelectLayer((CCLayer*)_selectedItem);
+                delegate->selectiveScrollHighlightLayer(false, (CCLayer*)_selectedItem, this);
+                delegate->selectiveScrollDidSelectLayer((CCLayer*)_selectedItem, this);
             }
         }
     }

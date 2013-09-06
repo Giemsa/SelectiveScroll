@@ -76,6 +76,7 @@ bool HelloWorld::init()
             lastY = p.y + margin;
         }
         scroll->setScrollSize(CCSizeMake(size.width, lastY));
+        scroll->scrollToTop();
         this->addChild(scroll);
     }
     return true;
@@ -85,47 +86,21 @@ bool HelloWorld::init()
 #pragma mark - DELEGATE
 #pragma mark SelectiveScroll (Delegate)
 
-bool HelloWorld::isLayerSelected(CCLayer* layer)
+bool HelloWorld::isLayerSelected(CCNode* node, void* sender)
 {
-    return ccc3BEqual(((CCLabelTTF*)layer)->getColor(), ccBLACK);
+    return ccc3BEqual(((CCLabelTTF*)node)->getColor(), ccBLACK);
 }
 
-void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCLayer* layer)
+void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender)
 {
-    CCLabelTTF* label = (CCLabelTTF*)layer;
+    CCLabelTTF* label = (CCLabelTTF*)node;
     label->setColor(hi ? ccBLACK : ccWHITE);
 }
 
-void HelloWorld::selectiveScrollDidSelectLayer(CCLayer* layer)
+void HelloWorld::selectiveScrollDidSelectLayer(CCNode* node, void* sender)
 {
     CCTransitionFade* fade = CCTransitionFade::create(0.5, HorizonScene::scene(), ccWHITE);
     CCDirector::sharedDirector()->replaceScene(fade);
-    
-//    CCArray* scrolls = this->getChildren();
-//    
-//    // find the caller 
-//    SelectiveScroll* callerScroll = NULL;
-//    for (int i = 0; i < scrolls->count(); i++) {
-//        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
-//        if (!scroll) continue;
-//        
-//        CCArray* items = scroll->getScrollLayer()->getChildren();
-//        // is caller scroll layer
-//        if (items->containsObject(layer)) {
-//            callerScroll = scroll;
-//        }
-//    }
-//    
-//    // sync scroll points
-//    for (int i = 0; i < scrolls->count(); i++) {
-//        SelectiveScroll* scroll = dynamic_cast<SelectiveScroll*>(scrolls->objectAtIndex(i));
-//        if (!scroll) continue;
-//        
-//        if (!callerScroll->isEqual(scroll)) {
-//            CCPoint p = callerScroll->getScrollLayer()->getPosition();
-//            scroll->scrollToPointWithAnimation(p);
-//        }
-//    }
 }
 
 

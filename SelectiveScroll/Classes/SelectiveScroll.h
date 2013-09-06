@@ -50,14 +50,18 @@ private:
     CCPoint _beganScrollPosition;
     
     // running animation
-    void* _runningAction;
+    CCAction* _runningAction;
     
     // touch helper
     void* _selectedItem;
     void detectSelectedItem(CCPoint p);
-    bool isScrollVertical();
-    bool isScrollHorizontal();
+    bool canScrollVertical();
+    bool canScrollHorizontal();
+    void stopScrollingAnimation();
     CCAction* fitToAction(CCPoint toPoint);
+    CCRect absoluteBoundingBox();
+    
+    void pagingScrollDidEndCallback(CCNode* node);
     
     // SelectiveScroll (Delegate)
     virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);

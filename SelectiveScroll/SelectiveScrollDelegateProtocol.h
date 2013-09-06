@@ -16,14 +16,14 @@ USING_NS_CC;
 class SelectiveScrollDelegate {
     
 public:
-    virtual bool isLayerSelected(CCLayer* layer) {CC_UNUSED_PARAM(layer); return false;}
-    virtual void selectiveScrollHighlightLayer(bool hi, CCLayer* layer) {CC_UNUSED_PARAM(hi), CC_UNUSED_PARAM(layer);}
-    virtual void selectiveScrollDidSelectLayer(CCLayer* layer) {CC_UNUSED_PARAM(layer);}
+    virtual bool isLayerSelected(CCNode* node, void* sender) {CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender); return false;}
+    virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender) {CC_UNUSED_PARAM(hi), CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender);}
+    virtual void selectiveScrollDidSelectLayer(CCNode* node, void* sender) {CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender);}
     
-//    // optional
-//    virtual void selectiveScrollBeginTouchOnLayer(CCLayer* layer) {CC_UNUSED_PARAM(layer);}
-//    virtual void selectiveScrollMoves(CCLayer* layer) {CC_UNUSED_PARAM(layer);}
-//    virtual void selectiveScrollCanceled(CCLayer* layer) {CC_UNUSED_PARAM(layer);}
+    // paging
+    virtual bool isPagingPointNode(CCNode* node, void* sender) {CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender); return false;}
+    virtual void pagingScrollWillEnd(CCNode* node, void* sender) {CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender);}
+    virtual void pagingScrollDidEnd(CCNode* node, void* sender) {CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender);}
 };
 
 

@@ -20,9 +20,9 @@ public:
     void menuCloseCallback(CCObject* pSender);
     
     // SelectiveScrollDelegate methods
-    virtual bool isLayerSelected(CCLayer* layer);
-    virtual void selectiveScrollHighlightLayer(bool hi, CCLayer* layer);
-    virtual void selectiveScrollDidSelectLayer(CCLayer* layer);
+    virtual bool isLayerSelected(CCNode* node, void* sender);
+    virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender);
+    virtual void selectiveScrollDidSelectLayer(CCNode* node, void* sender);
 };
 
 #endif // __HELLOWORLD_SCENE_H__
