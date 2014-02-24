@@ -67,7 +67,7 @@ namespace cocos2d
     void SelectiveScroll::draw()
     {
         // resize (if size was changed.)
-        const CCSize size = this->getContentSize();
+        const CCSize &size = this->getContentSize();
        
         if(_background && !_background->getContentSize().equals(size)) {
             _background->setContentSize(size);
@@ -117,7 +117,7 @@ namespace cocos2d
 
     void SelectiveScroll::scrollToPointWithAnimation(const CCPoint &p)
     {
-        this->stopAction((CCAction*)_runningAction);
+        this->stopAction(_runningAction);
         CCMoveTo* moveTo = CCMoveTo::create(1.0, p);
         _container->runAction(CCEaseInOut::create(moveTo, 2.0));
     }
@@ -126,13 +126,13 @@ namespace cocos2d
     #pragma mark Touch
 
     // returns Eased Action
-    CCAction* SelectiveScroll::getEaseAction(CCMoveTo* moveTo, const BoundingEffect effect)
+    CCAction* SelectiveScroll::getEaseAction(CCMoveTo* moveTo, const BoundingEffect::Type effect)
     {
         switch (effect) {
-            case BoundingEffectBack:    return CCEaseBackOut::create(moveTo);
-            case BoundingEffectBounce:  return CCEaseBounceOut::create(moveTo);
-            case BoundingEffectElastic: return CCEaseElasticOut::create(moveTo);
-            default:                    return CCEaseExponentialOut::create(moveTo);
+            case BoundingEffect::Back:    return CCEaseBackOut::create(moveTo);
+            case BoundingEffect::Bounce:  return CCEaseBounceOut::create(moveTo);
+            case BoundingEffect::Elastic: return CCEaseElasticOut::create(moveTo);
+            default:                      return CCEaseExponentialOut::create(moveTo);
         }
     }
 
@@ -357,7 +357,7 @@ namespace cocos2d
             return false;
         }
         // stop scrolling animation.
-        this->stopAction((CCAction*)_runningAction);
+        this->stopAction(_runningAction);
         
         // save points for calc.
         _lastTouchPoint = p;
@@ -398,8 +398,8 @@ namespace cocos2d
         if (_enableToScroll) {
             // speed scroll correction
             CCPoint delta(_lastTouchPoint.x - p.x, _lastTouchPoint.y - p.y);
-            delta.x *= -(14.0 <= abs(delta.x) ? 12.0 : 0.0);
-            delta.y *= (14.0 <= abs(delta.y) ? 12.0 : 0.0);
+            delta.x *= -(14.0 <= fabsf(delta.x) ? 12.0 : 0.0);
+            delta.y *= (14.0 <= fabsf(delta.y) ? 12.0 : 0.0);
             
             // fit
             CCAction* fitAction = this->fitToAction(delta);
@@ -410,8 +410,8 @@ namespace cocos2d
             if (_selectedItem != NULL) {
                 SelectiveScrollDelegate* delegate = this->getDelegate();
                 if (delegate) {
-                    delegate->selectiveScrollHighlightLayer(false, (CCLayer*)_selectedItem, this);
-                    delegate->selectiveScrollDidSelectLayer((CCLayer*)_selectedItem, this);
+                    delegate->selectiveScrollHighlightLayer(false, _selectedItem, this);
+                    delegate->selectiveScrollDidSelectLayer(_selectedItem, this);
                 }
             }
         }
@@ -421,27 +421,28 @@ namespace cocos2d
     #pragma mark - Setter/Getter
 
     // clipToBounds
-    bool SelectiveScroll::clipToBounds() const { return _clipToBounds; }
-    void SelectiveScroll::clipToBounds(const bool clip) { _clipToBounds = clip; _clipScrollInteraction = clip; }
+    bool SelectiveScroll::getClipToBounds() const { return _clipToBounds; }
+    void SelectiveScroll::setClipToBounds(const bool clip) { _clipToBounds = clip; _clipScrollInteraction = clip; }
 
     // bounce effect kind
-    void SelectiveScroll::setBoundingEffectKind(const BoundingEffect effect)
+    void SelectiveScroll::setBoundingEffectKind(const BoundingEffect::Type effect)
     {
         _topBoundingEffect = effect;
         _bottomBoundingEffect = effect;
     }
-    void SelectiveScroll::setBoundingEffectKind(const BoundingEffect top, const BoundingEffect bottom)
+
+    void SelectiveScroll::setBoundingEffectKind(const BoundingEffect::Type top, const BoundingEffect::Type bottom)
     {
         _topBoundingEffect = top;
         _bottomBoundingEffect = bottom;
     }
 
     // enable/disable scroll
-    bool SelectiveScroll::enableToScroll() const
+    bool SelectiveScroll::getEnableToScroll() const
     {
         return _enableToScroll;
     }
-    void SelectiveScroll::enableToScroll(const bool enable)
+    void SelectiveScroll::setEnableToScroll(const bool enable)
     {
         _enableToScroll = enable;
     }

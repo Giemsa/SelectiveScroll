@@ -15,7 +15,6 @@ namespace cocos2d
     class SelectiveScroll; // in SelectiveScroll.h
 
     class SelectiveScrollDelegate {
-        
     public:
         virtual bool isLayerSelected(CCNode* node, SelectiveScroll* sender) {CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender); return false;}
         virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, SelectiveScroll* sender) {CC_UNUSED_PARAM(hi), CC_UNUSED_PARAM(node), CC_UNUSED_PARAM(sender);}

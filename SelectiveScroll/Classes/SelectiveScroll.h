@@ -14,13 +14,17 @@
 
 namespace cocos2d {
     // Top / Bottom bounding effect kind.
-    typedef enum {
-        BoundingEffectNormal,
-        BoundingEffectBack,
-        BoundingEffectBounce,
-        BoundingEffectElastic,
-        BoundingEffect_Count
-    } BoundingEffect;
+    namespace BoundingEffect
+    {
+        enum Type
+        {
+            Normal,
+            Back,
+            Bounce,
+            Elastic,
+            Count
+        };
+    }
 
     class SelectiveScroll : public CCLayer {
     private:
@@ -36,8 +40,8 @@ namespace cocos2d {
         bool _enableToScroll;
         
         // effect
-        BoundingEffect _topBoundingEffect;
-        BoundingEffect _bottomBoundingEffect;
+        BoundingEffect::Type _topBoundingEffect;
+        BoundingEffect::Type _bottomBoundingEffect;
         
         // scroll calc
         CCPoint _beganTouchPoint;
@@ -58,9 +62,9 @@ namespace cocos2d {
         CCAction* fitToAction(const CCPoint &toPoint);
         CCRect absoluteBoundingBox();
         
-        CCAction* getEaseAction(CCMoveTo* moveTo, const BoundingEffect effect);
+        CCAction* getEaseAction(CCMoveTo* moveTo, const BoundingEffect::Type effect);
         void pagingScrollDidEndCallback(CCNode* node);
-        
+
         // SelectiveScroll (Delegate)
         virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
         virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
@@ -76,12 +80,12 @@ namespace cocos2d {
         CC_SYNTHESIZE(CCSize, _scrollSize, ScrollSize);
         
         // Effect kind can set individually.
-        void setBoundingEffectKind(const BoundingEffect effect); // both
-        void setBoundingEffectKind(const BoundingEffect top, const BoundingEffect bottom); // individual
+        void setBoundingEffectKind(const BoundingEffect::Type effect); // both
+        void setBoundingEffectKind(const BoundingEffect::Type top, const BoundingEffect::Type bottom); // individual
         
         // clipToBounds Setter/Getter
-        bool clipToBounds() const;
-        void clipToBounds(const bool clip);
+        bool getClipToBounds() const;
+        void setClipToBounds(const bool clip);
         
         // scrollTo
         void scrollToTop();
@@ -89,8 +93,8 @@ namespace cocos2d {
         void scrollToPointWithAnimation(const CCPoint &p);
         
         // enable/disable scroll
-        bool enableToScroll() const;
-        void enableToScroll(const bool enable);
+        bool getEnableToScroll() const;
+        void setEnableToScroll(const bool enable);
 
         void setBackground(CCNode* bg);
         CCNode* getBackground() const;

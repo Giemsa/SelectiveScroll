@@ -32,7 +32,7 @@ bool HorizonScene::init()
     }
     
     // setup BG
-    ccColor4B color = ccc4(255.0 * 0.9, 255.0 * 0.9, 255.0 * 0.9, 255.0 * 1.0);
+    const ccColor4B color = ccc4(255.0 * 0.9, 255.0 * 0.9, 255.0 * 0.9, 255.0 * 1.0);
     _bgLayer = CCLayerColor::create(color, WINSIZE.width, WINSIZE.height);
     _bgLayer->setPosition(CCPointZero);
     _bgLayer->retain();
@@ -50,7 +50,7 @@ bool HorizonScene::init()
     scroll->setContainer(container);
     scroll->setBackground(background);
     scroll->setPosition(WINCENTER.x, WINCENTER.y);
-    scroll->setBoundingEffectKind(BoundingEffectBack);
+    scroll->setBoundingEffectKind(BoundingEffect::Back);
     scroll->setContentSize(size);
     scroll->setDelegate(this);
     
@@ -65,8 +65,8 @@ bool HorizonScene::init()
         // add
         container->addChild(label);
         
-        CCPoint p = label->getPosition();
-        string title = to_string(rowCount - i) + " (" + to_string((int)p.y) + ")";
+        const CCPoint &p = label->getPosition();
+        const string title = to_string(rowCount - i) + " (" + to_string(static_cast<int>(p.y)) + ")";
         label->setString(title.c_str());
         
         CCRect rect = label->boundingBox();

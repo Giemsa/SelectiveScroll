@@ -36,19 +36,21 @@ CCScene* HelloWorld::scene()
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
+    static const int rowCount = 50;
+    static const int count = BoundingEffect::Count;
+    static float margin = 100;
+
     if (!CCLayer::init()) {
         return false;
     }
     
     // setup BG
-    ccColor4B color = ccc4(255.0 * 0.9, 255.0 * 0.9, 255.0 * 0.9, 255.0 * 1.0);
+    const ccColor4B color = ccc4(255.0 * 0.9, 255.0 * 0.9, 255.0 * 0.9, 255.0 * 1.0);
     _bgLayer = CCLayerColor::create(color, WINSIZE.width, WINSIZE.height);
     _bgLayer->setPosition(CCPointZero);
     this->addChild(_bgLayer);
     
-    
     // setup scroll
-    const int count = BoundingEffect_Count;
     const CCSize size(WINSIZE.width / count * 0.7, WINSIZE.height * 0.7);
     for (int i = 0; i < count; i++) {
         CCLayerColor* container = CCLayerColor::create(ccc4(0xFF, 0x00, 0x00, 0x88), 600.0f, 600.0f);
@@ -61,24 +63,22 @@ bool HelloWorld::init()
         scroll->setContainer(container);
         scroll->setBackground(background);
         scroll->setPosition(CCSizeMake(WINSIZE.width / (count + 1) * (i + 1), WINCENTER.y));
-        scroll->setBoundingEffectKind((BoundingEffect)i);
+        scroll->setBoundingEffectKind(static_cast<BoundingEffect::Type>(i));
         scroll->setContentSize(size);
         scroll->setDelegate(this);
-        scroll->clipToBounds(true);
+        scroll->setClipToBounds(true);
         
         float lastY = 0.0;
-        int rowCount = 50;
         for (int ii = 0; ii < rowCount; ii++) {
             CCLabelTTF* label = CCLabelTTF::create("", "Helvetica", 44);
             
             // position
-            float margin = 100;
-            float y = margin + (label->getScaleY() + margin) * ii;
+            const float y = margin + (label->getScaleY() + margin) * ii;
             label->setPosition(CCPointMake(size.width * 0.5, y));
             container->addChild(label);
             
-            CCPoint p = label->getPosition();
-            string title = to_string(rowCount - ii) + " (" + to_string((int)p.y) + ")";
+            const CCPoint p = label->getPosition();
+            const string title = to_string(rowCount - ii) + " (" + to_string(static_cast<int>(p.y)) + ")";
             label->setString(title.c_str());
             
             lastY = p.y + margin;
