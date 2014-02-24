@@ -8,12 +8,13 @@ USING_NS_CC;
 
 class HelloWorld : public cocos2d::CCLayer, public SelectiveScrollDelegate
 {
+private:
+    SelectiveScroll* _scroll;
+    CCLayerColor* _bgLayer;
 public:
     HelloWorld();
     virtual ~HelloWorld();
     
-    CC_SYNTHESIZE(SelectiveScroll*, _scroll, Scroll);
-    CC_SYNTHESIZE(CCLayerColor*, _bgLayer, BGLayer);
     
     virtual bool init();
     static cocos2d::CCScene* scene();

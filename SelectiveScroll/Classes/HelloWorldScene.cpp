@@ -46,17 +46,25 @@ bool HelloWorld::init()
     _bgLayer->setPosition(CCPointZero);
     this->addChild(_bgLayer);
     
+    
     // setup scroll
-    int count = BoundingEffect_Count;
+    const int count = BoundingEffect_Count;
+    const CCSize size(WINSIZE.width / count * 0.7, WINSIZE.height * 0.7);
     for (int i = 0; i < count; i++) {
-        CCSize size = CCSizeMake(WINSIZE.width / count * 0.7, WINSIZE.height * 0.7);
+        CCLayerColor* container = CCLayerColor::create(ccc4(0xFF, 0x00, 0x00, 0x88), 600.0f, 600.0f);
+        container->setAnchorPoint(CCPointMake(0.0, 0.0));
+        
+        CCLayerColor* background = CCLayerColor::create(ccc4(0x00, 0x00, 0xFF, 0x88), 600.0f, 600.0f);
+        background->setAnchorPoint(CCPointMake(0.0, 0.0));
+        
         SelectiveScroll* scroll = SelectiveScroll::create();
+        scroll->setContainer(container);
+        scroll->setBackground(background);
         scroll->setPosition(CCSizeMake(WINSIZE.width / (count + 1) * (i + 1), WINCENTER.y));
         scroll->setBoundingEffectKind((BoundingEffect)i);
         scroll->setContentSize(size);
         scroll->setDelegate(this);
         scroll->clipToBounds(true);
-        scroll->retain();
         
         float lastY = 0.0;
         int rowCount = 50;
@@ -67,7 +75,7 @@ bool HelloWorld::init()
             float margin = 100;
             float y = margin + (label->getScaleY() + margin) * ii;
             label->setPosition(CCPointMake(size.width * 0.5, y));
-            scroll->getScrollLayer()->addChild(label);
+            container->addChild(label);
             
             CCPoint p = label->getPosition();
             string title = to_string(rowCount - ii) + " (" + to_string((int)p.y) + ")";
@@ -79,6 +87,7 @@ bool HelloWorld::init()
         scroll->scrollToTop();
         this->addChild(scroll);
     }
+
     return true;
 }
 

@@ -20,14 +20,18 @@ namespace cocos2d
 
     // MEMO:
     // Define Layer order.
-    typedef enum {
-        ZIndex_BGLayer,
-        ZIndex_ScrollLayer,
-    } ZIndex;
+    namespace ZIndex
+    {
+        enum Type
+        {
+            BGLayer,
+            ScrollLayer
+        };
+    }
 
     SelectiveScroll::SelectiveScroll()
-    :   _scrollLayerColor(ccc4(0xFF, 0, 0, 0xFF / 2))
-    ,   _bgColor(ccc4(0, 0, 0xFF, 0xFF / 2))
+    :   _container(NULL)
+    ,   _background(NULL)
     ,   _clipToBounds(true)
     ,   _clipScrollInteraction(true)
     ,   _enableToScroll(true)
@@ -57,17 +61,6 @@ namespace cocos2d
         this->setAnchorPoint(CCPointMake(0.5, 0.5));
         this->ignoreAnchorPointForPosition(false);
         
-        // bgLayer
-        const CCSize size = this->getContentSize();
-        _bgLayer = CCLayerColor::create(_bgColor, size.width, size.height);
-        this->addChild(_bgLayer, ZIndex_BGLayer);
-        _bgLayer->setAnchorPoint(CCPointZero);  
-        
-        // scrollLayer
-        _scrollLayer = CCLayerColor::create(_scrollLayerColor, _scrollSize.width, _scrollSize.height);
-        this->addChild(_scrollLayer, ZIndex_ScrollLayer);
-        _scrollLayer->setAnchorPoint(CCPointMake(0.0, 0.0));
-        
         return true;
     }
 
@@ -75,12 +68,12 @@ namespace cocos2d
     {
         // resize (if size was changed.)
         const CCSize size = this->getContentSize();
-        
-        if (_bgLayer && !_bgLayer->getContentSize().equals(size)) {
-            _bgLayer->setContentSize(size);
+       
+        if(_background && !_background->getContentSize().equals(size)) {
+            _background->setContentSize(size);
         }
-        if (_scrollLayer && !_scrollLayer->getContentSize().equals(_scrollSize)) {
-            _scrollLayer->setContentSize(_scrollSize);
+        if (_container && !_container->getContentSize().equals(_scrollSize)) {
+            _container->setContentSize(_scrollSize);
         }
     }
 
@@ -119,14 +112,14 @@ namespace cocos2d
 
     void SelectiveScroll::scrollToPoint(const CCPoint &p)
     {
-        _scrollLayer->setPosition(p);
+        _container->setPosition(p);
     }
 
     void SelectiveScroll::scrollToPointWithAnimation(const CCPoint &p)
     {
         this->stopAction((CCAction*)_runningAction);
         CCMoveTo* moveTo = CCMoveTo::create(1.0, p);
-        _scrollLayer->runAction(CCEaseInOut::create(moveTo, 2.0));
+        _container->runAction(CCEaseInOut::create(moveTo, 2.0));
     }
 
 
@@ -191,7 +184,7 @@ namespace cocos2d
         static const float bottom = 0.0;
         static const float left = 0.0;
 
-        const CCPoint toPoint(_scrollLayer->getPositionX() + delta.x, _scrollLayer->getPositionY() + delta.y);
+        const CCPoint toPoint(_container->getPositionX() + delta.x, _container->getPositionY() + delta.y);
         CCPoint fitPoint = CCPointZero;
         const float top = this->getContentSize().height - _scrollSize.height;
         const float right = this->getContentSize().width - _scrollSize.width;
@@ -234,7 +227,7 @@ namespace cocos2d
         }
         else {
             const CCPoint byPoint((canScrollVertical() ? delta.x : 0.0), (canScrollHorizontal() ? delta.y : 0.0));
-            CCPoint toPoint = _scrollLayer->getPosition() + byPoint;
+            CCPoint toPoint = _container->getPosition() + byPoint;
             
             bool isPagingEnabled = false;
             
@@ -246,7 +239,7 @@ namespace cocos2d
             // search paging point
             PointVector pagingPoints;
             int nearestIndex = 0;
-            CCArray* children = _scrollLayer->getChildren();
+            CCArray* children = _container->getChildren();
             for (int i = 0; i < children->count(); i++) {
                 CCNode* node = dynamic_cast<CCNode*>(children->objectAtIndex(i));
                 if (!node) continue;
@@ -319,14 +312,14 @@ namespace cocos2d
         const float winHeight = CCDirector::sharedDirector()->getWinSize().height;
         CCPoint pointOnThisLayer((p.x - rect.origin.x), (p.y - (winHeight - rect.size.height) + rect.origin.y));
         CCPoint pointOnScrollLayer = CCPointZero;
-        pointOnScrollLayer.x = -_scrollLayer->getPositionX() + pointOnThisLayer.x;
-        pointOnScrollLayer.y = rect.size.height - _scrollLayer->getPositionY() - pointOnThisLayer.y;
+        pointOnScrollLayer.x = -_container->getPositionX() + pointOnThisLayer.x;
+        pointOnScrollLayer.y = rect.size.height - _container->getPositionY() - pointOnThisLayer.y;
         
         // reset first.
         _selectedItem = NULL;
         
         // search selected item
-        CCArray* sprites = _scrollLayer->getChildren();
+        CCArray* sprites = _container->getChildren();
         if (sprites == NULL) return;
         
         for (int i = 0; i < sprites->count(); i++) {
@@ -369,7 +362,7 @@ namespace cocos2d
         // save points for calc.
         _lastTouchPoint = p;
         _beganTouchPoint = p;
-        _beganScrollPosition = _scrollLayer->getPosition();
+        _beganScrollPosition = _container->getPosition();
         
         this->detectSelectedItem(p);
         
@@ -384,10 +377,10 @@ namespace cocos2d
         
         if (_enableToScroll) {
             if (canScrollVertical()) {
-                _scrollLayer->setPositionX(_beganScrollPosition.x - _beganTouchPoint.x + p.x);
+                _container->setPositionX(_beganScrollPosition.x - _beganTouchPoint.x + p.x);
             }
             else if (canScrollHorizontal()) {
-                _scrollLayer->setPositionY(_beganScrollPosition.y + _beganTouchPoint.y - p.y);
+                _container->setPositionY(_beganScrollPosition.y + _beganTouchPoint.y - p.y);
             }
         }
         
@@ -410,7 +403,7 @@ namespace cocos2d
             
             // fit
             CCAction* fitAction = this->fitToAction(delta);
-            _scrollLayer->runAction(fitAction);
+            _container->runAction(fitAction);
             _runningAction = fitAction;
             
             // has selected item.
@@ -451,5 +444,34 @@ namespace cocos2d
     void SelectiveScroll::enableToScroll(const bool enable)
     {
         _enableToScroll = enable;
+    }
+
+    void SelectiveScroll::setBackground(CCNode* bg)
+    {
+        if(_background) {
+            _background->removeFromParent();
+        }
+        _background = bg;
+        this->addChild(_background, ZIndex::BGLayer);
+    }
+
+    CCNode* SelectiveScroll::getBackground() const
+    {
+        return _background;
+    }
+
+    void SelectiveScroll::setContainer(CCNode* node)
+    {
+        if(_container) {
+            _container->removeFromParent();
+        }
+
+        _container = node;
+        this->addChild(_container, ZIndex::ScrollLayer);
+    }
+
+    CCNode* SelectiveScroll::getContainer() const
+    {
+        return _container;
     }
 }

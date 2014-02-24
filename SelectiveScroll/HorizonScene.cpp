@@ -25,6 +25,8 @@ CCScene* HorizonScene::scene()
 
 bool HorizonScene::init()
 {
+    static const int rowCount = 50;
+
     if (!CCLayer::init()) {
         return false;
     }
@@ -36,17 +38,23 @@ bool HorizonScene::init()
     _bgLayer->retain();
     this->addChild(_bgLayer);
     
+    CCLayerColor* container = CCLayerColor::create(ccc4(0xFF, 0x00, 0x00, 0x88), 600.0f, 600.0f);
+    container->setAnchorPoint(CCPointMake(0.0, 0.0));
+
+    CCLayerColor* background = CCLayerColor::create(ccc4(0x00, 0x00, 0xFF, 0x88), 600.0f, 600.0f);
+    background->setAnchorPoint(CCPointMake(0.0, 0.0));
+
     // setup scroll
-    CCSize size = CCSizeMake(WINSIZE.width * 0.8, WINSIZE.height * 0.8);
+    const CCSize size(WINSIZE.width * 0.8, WINSIZE.height * 0.8);
     SelectiveScroll* scroll = SelectiveScroll::create();
+    scroll->setContainer(container);
+    scroll->setBackground(background);
     scroll->setPosition(WINCENTER.x, WINCENTER.y);
     scroll->setBoundingEffectKind(BoundingEffectBack);
     scroll->setContentSize(size);
     scroll->setDelegate(this);
-    scroll->retain();
     
     // add labels
-    int rowCount = 50;
     float lastX = 0.0;
     for (int i = 0; i < rowCount; i++) {
         CCLabelTTF* label = CCLabelTTF::create("", "Helvetica", 44);
@@ -55,7 +63,7 @@ bool HorizonScene::init()
         label->setPosition(CCPointMake(size.width * (i + 1) * 0.333, size.height * 0.5));
         
         // add
-        scroll->getScrollLayer()->addChild(label);
+        container->addChild(label);
         
         CCPoint p = label->getPosition();
         string title = to_string(rowCount - i) + " (" + to_string((int)p.y) + ")";

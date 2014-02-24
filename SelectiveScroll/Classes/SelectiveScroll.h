@@ -35,10 +35,6 @@ namespace cocos2d {
         bool _clipScrollInteraction;
         bool _enableToScroll;
         
-        // color
-        ccColor4B _scrollLayerColor;
-        ccColor4B _bgColor;
-        
         // effect
         BoundingEffect _topBoundingEffect;
         BoundingEffect _bottomBoundingEffect;
@@ -50,6 +46,8 @@ namespace cocos2d {
         
         // running animation
         CCAction* _runningAction;
+        CCNode* _container;
+        CCNode* _background;
         
         // touch helper
         CCNode* _selectedItem;
@@ -76,8 +74,6 @@ namespace cocos2d {
         
         // layer
         CC_SYNTHESIZE(CCSize, _scrollSize, ScrollSize);
-        CC_SYNTHESIZE(CCLayerColor*, _bgLayer, BGLayer);
-        CC_SYNTHESIZE(CCLayerColor*, _scrollLayer, ScrollLayer);
         
         // Effect kind can set individually.
         void setBoundingEffectKind(const BoundingEffect effect); // both
@@ -95,6 +91,12 @@ namespace cocos2d {
         // enable/disable scroll
         bool enableToScroll() const;
         void enableToScroll(const bool enable);
+
+        void setBackground(CCNode* bg);
+        CCNode* getBackground() const;
+
+        void setContainer(CCNode* node);
+        CCNode* getContainer() const;
     };
 }
 
