@@ -76,18 +76,18 @@ bool HorizonScene::init()
 #pragma mark - DELEGATE
 #pragma mark SelectiveScroll (Delegate)
 
-bool HorizonScene::isLayerSelected(CCNode* node, void* sender)
+bool HorizonScene::isLayerSelected(CCNode* node, SelectiveScroll* sender)
 {
     return ccc3BEqual(((CCLabelTTF*)node)->getColor(), ccBLACK);
 }
 
-void HorizonScene::selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender) 
+void HorizonScene::selectiveScrollHighlightLayer(bool hi, CCNode* node, SelectiveScroll* sender)
 {
     CCLabelTTF* label = (CCLabelTTF*)node;
     label->setColor(hi ? ccBLACK : ccWHITE);
 }
 
-void HorizonScene::selectiveScrollDidSelectLayer(CCNode* node, void* sender)
+void HorizonScene::selectiveScrollDidSelectLayer(CCNode* node, SelectiveScroll* sender)
 {
     CCDirector::sharedDirector()->replaceScene(HelloWorld::scene());
 }

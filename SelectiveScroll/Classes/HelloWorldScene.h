@@ -4,6 +4,8 @@
 #include "cocos2d.h"
 #include "SelectiveScroll.h"
 
+USING_NS_CC;
+
 class HelloWorld : public cocos2d::CCLayer, public SelectiveScrollDelegate
 {
 public:
@@ -20,9 +22,9 @@ public:
     void menuCloseCallback(CCObject* pSender);
     
     // SelectiveScrollDelegate methods
-    virtual bool isLayerSelected(CCNode* node, void* sender);
-    virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender);
-    virtual void selectiveScrollDidSelectLayer(CCNode* node, void* sender);
+    virtual bool isLayerSelected(CCNode* node, SelectiveScroll* sender);
+    virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, SelectiveScroll* sender);
+    virtual void selectiveScrollDidSelectLayer(CCNode* node, SelectiveScroll* sender);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

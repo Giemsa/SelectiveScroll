@@ -86,18 +86,18 @@ bool HelloWorld::init()
 #pragma mark - DELEGATE
 #pragma mark SelectiveScroll (Delegate)
 
-bool HelloWorld::isLayerSelected(CCNode* node, void* sender)
+bool HelloWorld::isLayerSelected(CCNode* node, SelectiveScroll* sender)
 {
     return ccc3BEqual(((CCLabelTTF*)node)->getColor(), ccBLACK);
 }
 
-void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender)
+void HelloWorld::selectiveScrollHighlightLayer(bool hi, CCNode* node, SelectiveScroll* sender)
 {
     CCLabelTTF* label = (CCLabelTTF*)node;
     label->setColor(hi ? ccBLACK : ccWHITE);
 }
 
-void HelloWorld::selectiveScrollDidSelectLayer(CCNode* node, void* sender)
+void HelloWorld::selectiveScrollDidSelectLayer(CCNode* node, SelectiveScroll* sender)
 {
     CCTransitionFade* fade = CCTransitionFade::create(0.5, HorizonScene::scene(), ccWHITE);
     CCDirector::sharedDirector()->replaceScene(fade);

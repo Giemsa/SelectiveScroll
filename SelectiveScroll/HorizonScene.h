@@ -28,9 +28,9 @@ public:
     CREATE_FUNC(HorizonScene);
     
     // SelectiveScroll (Delegate)
-    virtual bool isLayerSelected(CCNode* node, void* sender);
-    virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, void* sender);
-    virtual void selectiveScrollDidSelectLayer(CCNode* node, void* sender);
+    virtual bool isLayerSelected(CCNode* node, SelectiveScroll* sender);
+    virtual void selectiveScrollHighlightLayer(bool hi, CCNode* node, SelectiveScroll* sender);
+    virtual void selectiveScrollDidSelectLayer(CCNode* node, SelectiveScroll* sender);
 };
 
 #endif /* defined(__SelectiveScroll__HorizonScene__) */
